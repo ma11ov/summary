@@ -1,0 +1,10 @@
+# Игнорировать папки с зависимостями
+/extension/node_modules
+/server/node_modules
+
+# Игнорировать файлы с переменными окружения (самое важное!)
+/server/.env
+
+# Системные файлы macOS и Windows
+.DS_Store
+Thumbs.db
