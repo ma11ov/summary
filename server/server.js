@@ -22,4 +22,3 @@ app.post('/summarize', (req, res) => {
 app.listen(PORT, () => {
     console.log(`Сервер запущен и слушает порт ${PORT}`);
 });
-//проверка для гита

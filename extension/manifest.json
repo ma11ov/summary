@@ -18,6 +18,14 @@
       "default_title": "Суммаризировать страницу"
     },
   
+    "content_scripts": [
+    {
+      "matches": ["https://*/*", "http://*/*"],
+      "js": ["readability.js", "content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+
     "icons": {
       "16": "icons/icon16.png",
       "48": "icons/icon48.png",
