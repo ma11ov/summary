@@ -132,6 +132,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       chrome.runtime.sendMessage({
         command: 'articleText',
         text: cleanedText
+      }).catch(error => {
+        console.error('Ошибка при отправке сообщения в service worker:', error);
       });
     } else {
       console.log('Не удалось извлечь содержимое статьи.');
