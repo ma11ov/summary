@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const app = express();
 const fetch = require('node-fetch');
+const { HttpsProxyAgent } = require('https-proxy-agent');
 
 // Middleware для того, чтобы сервер мог принимать JSON в теле запроса
 app.use(express.json());
@@ -22,12 +23,20 @@ app.post('/summarize', async (req, res) => {
     console.log(`📤 Отправка запроса к OpenAI API. Длина текста: ${text.length} символов`);
 
     try {
+        // Настройка прокси: http://156.246.211.187:63008:Y2PsTvNV:P4G4dVuX
+        // Формат: http://host:port:username:password -> http://username:password@host:port
+        const proxyUrl = 'http://Y2PsTvNV:P4G4dVuX@156.246.211.187:63008';
+        const agent = new HttpsProxyAgent(proxyUrl);
+        
+        console.log('🔗 Используется прокси для запроса к OpenAI API');
+
         const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
             },
+            agent: agent, // Используем прокси-агент
             body: JSON.stringify({
                 model: 'gpt-4o-2024-05-13', // gpt-4o-mini от OpenAI, ближайшая поддерживаемая нотация
                 messages: [
