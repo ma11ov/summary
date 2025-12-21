@@ -1,8 +1,21 @@
 require('dotenv').config();
 const express = require('express');
+const rateLimit = require('express-rate-limit');
 const app = express();
 const fetch = require('node-fetch');
 const { HttpsProxyAgent } = require('https-proxy-agent');
+
+// Rate limiting для защиты от DoS-атак: максимум 50 запросов за 5 минут с одного IP
+const limiter = rateLimit({
+    windowMs: 5 * 60 * 1000, // 5 минут
+    max: 50, // максимум 50 запросов за окно
+    message: 'Too many requests',
+    standardHeaders: true, // Возвращает информацию об ограничениях в заголовках `RateLimit-*`
+    legacyHeaders: false, // Отключает заголовки `X-RateLimit-*`
+});
+
+// Применяем rate limiting ко всем запросам ДО любой другой логики
+app.use(limiter);
 
 // Middleware для того, чтобы сервер мог принимать JSON в теле запроса
 app.use(express.json());
