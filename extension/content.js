@@ -39,26 +39,45 @@ function cleanDocument(doc) {
     '.breadcrumb'
   ];
 
+  // "Подозрительные" слова в class / id. Сравниваем целые слова,
+  // а не подстроки: "ads" не должно совпадать с "uploads".
+  const suspiciousWords = new Set([
+    'nav', 'navbar', 'navigation', 'menu', 'breadcrumb', 'breadcrumbs',
+    'footer', 'header', 'sidebar', 'widget', 'ad', 'ads', 'advert',
+    'advertisement', 'promo', 'subscribe', 'popup', 'modal', 'share', 'social'
+  ]);
+
+  // Элементы, которые нельзя удалять, иначе пропадёт вся статья:
+  // сами html/body/main/article и любые обёртки вокруг main/article.
+  const isProtected = (el) =>
+    el === doc.documentElement ||
+    el === doc.body ||
+    el.tagName === 'MAIN' ||
+    el.tagName === 'ARTICLE' ||
+    !!el.querySelector('main, article');
+
+  // "site-header--dark nav_open" -> ["site", "header", "dark", "nav", "open"]
+  const hasSuspiciousWord = (value) =>
+    typeof value === 'string' &&
+    value
+      .toLowerCase()
+      .split(/[\s\-_]+/)
+      .some((word) => suspiciousWords.has(word));
+
+  const remove = (el) => el.parentNode && el.parentNode.removeChild(el);
+
   try {
     // Удаляем типовые блоки по селекторам
-    const nodes = doc.querySelectorAll(junkSelectors.join(','));
-    nodes.forEach((node) => node.parentNode && node.parentNode.removeChild(node));
+    doc.querySelectorAll(junkSelectors.join(',')).forEach((node) => {
+      if (!isProtected(node)) remove(node);
+    });
 
     // Дополнительно вычищаем элементы по "подозрительным" class / id
-    const suspiciousRe =
-      /(nav|menu|breadcrumb|footer|header|sidebar|widget|ad-|ads|advert|promo|subscribe|popup|modal|share|social)/i;
-
     doc.querySelectorAll('*').forEach((el) => {
-      const cls = el.className || '';
-      const id = el.id || '';
+      if (!el.isConnected || isProtected(el)) return;
 
-      if (typeof cls === 'string' && suspiciousRe.test(cls)) {
-        el.parentNode && el.parentNode.removeChild(el);
-        return;
-      }
-
-      if (typeof id === 'string' && suspiciousRe.test(id)) {
-        el.parentNode && el.parentNode.removeChild(el);
+      if (hasSuspiciousWord(el.className) || hasSuspiciousWord(el.id)) {
+        remove(el);
       }
     });
   } catch (e) {
